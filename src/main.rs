@@ -1,6 +1,6 @@
+use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::{fs, path::PathBuf};
-use std::fs::File;
 
 fn main() {
     let files = get_all_files();
@@ -8,10 +8,30 @@ fn main() {
     graph_all(files, lines);
 }
 
+fn calculate_weekday_from_date_string(date_string: &str) -> String {
+    let date_parts: Vec<&str> = date_string.split("_").collect();
+    let year = date_parts[0].parse::<i32>().unwrap();
+    let month = date_parts[1].parse::<i32>().unwrap();
+    let day = date_parts[2].parse::<i32>().unwrap();
+    let t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
+    let year = if month < 3 { year - 1 } else { year };
+    let weekday =
+        ((year + year / 4 - year / 100 + year / 400 + t[(month - 1) as usize] + day) % 7) as usize;
+    let weekdays = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ];
+    weekdays[weekday].to_string()
+}
 fn get_bar_length(len: i32) -> String {
     let mut final_string = "".to_string();
-    for i in 0..(len/10) {
-        if i%6==0 && i!=0 {
+    for i in 0..(len / 10) {
+        if i % 6 == 0 && i != 0 {
             final_string.push('|')
         }
         final_string.push('#');
@@ -23,14 +43,22 @@ fn graph_all(files: Vec<String>, lines: Vec<i32>) {
     let mut all_lengths = 0;
     for entry in 0..files.len() {
         let file_name: Vec<&str> = files[entry].split("/").collect();
-        print!("{} | {}", file_name[file_name.len()-1], get_bar_length(lines[entry]));
+        print!(
+            "{}: {} | {}",
+            file_name[file_name.len() - 1],
+            format!(
+                "{: <9}",
+                calculate_weekday_from_date_string(file_name[file_name.len() - 1])
+            ),
+            get_bar_length(lines[entry])
+        );
         println!();
         all_lengths += lines[entry];
     }
-    println!("Average in minutes: {}", all_lengths/lines.len() as i32)
+    println!("Average in minutes: {}", all_lengths / lines.len() as i32)
 }
 
-fn get_all_line_numbers() -> Vec<i32>{
+fn get_all_line_numbers() -> Vec<i32> {
     let files = get_all_files();
     let mut all_lines = vec![1];
     all_lines.remove(0);
