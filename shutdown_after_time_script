@@ -1,0 +1,8 @@
+#!/bin/bash
+filename="$(date +%Y_%m_%d)"
+if [ $(cat $HOME/uptime/${filename} | wc -l) -gt 60 ]
+then
+  sleep 120
+  echo "\nno" | wofi -p "your time is over" --show dmenu 
+  shutdown now
+fi
